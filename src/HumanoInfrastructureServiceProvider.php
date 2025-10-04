@@ -62,26 +62,23 @@ class HumanoInfrastructureServiceProvider extends PackageServiceProvider
 		// Ensure permissions exist for menus and access
 		try {
 			if (Schema::hasTable('permissions') && class_exists(Permission::class)) {
-				$permissions = [
-					'server.list',
-					'server.show',
-					'server.create',
-					'server.edit',
-					'server.destroy',
-					'hosting.list',
-					'hosting.show',
-					'hosting.create',
-					'hosting.edit',
-					'hosting.destroy',
-				];
-
-				foreach ($permissions as $name) {
-					Permission::firstOrCreate(['name' => $name], ['guard_name' => 'web']);
+				// Run the permissions seeder
+				if (class_exists(\HumanoInfrastructure\Database\Seeders\InfrastructurePermissionsSeeder::class)) {
+					(new \HumanoInfrastructure\Database\Seeders\InfrastructurePermissionsSeeder())->run();
 				}
 
+				// Grant all infrastructure permissions to admin role
 				$adminRole = class_exists(Role::class) ? Role::where('name', 'admin')->first() : null;
 				if ($adminRole) {
-					$adminRole->givePermissionTo($permissions);
+					$infrastructurePermissions = Permission::where(function($query) {
+						$query->where('name', 'LIKE', 'server.%')
+							->orWhere('name', 'LIKE', 'hosting.%')
+							->orWhere('name', 'LIKE', 'domain.%');
+					})->pluck('name')->toArray();
+					
+					if (!empty($infrastructurePermissions)) {
+						$adminRole->givePermissionTo($infrastructurePermissions);
+					}
 				}
 			}
 		} catch (\Throwable $e) {
