@@ -25,6 +25,10 @@ class HumanoInfrastructureServiceProvider extends PackageServiceProvider
 			]);
 	}
 
+	/**
+	 * Note: This package provides infrastructure management features.
+	 * The 'servers' module is registered under the 'infrastructure' group.
+	 */
 	public function bootingPackage(): void
 	{
 		parent::bootingPackage();
@@ -33,22 +37,24 @@ class HumanoInfrastructureServiceProvider extends PackageServiceProvider
 			if (Schema::hasTable('modules')) {
 				if (class_exists(\App\Models\Module::class)) {
 					\App\Models\Module::updateOrCreate(
-						['key' => 'infrastructure'],
+						['key' => 'servers'],
 						[
-							'name' => 'Infrastructure',
+							'name' => 'Servers',
 							'icon' => 'ti ti-server',
-							'description' => 'Infrastructure management (hosting, servers, domains)',
+							'description' => 'Server management module',
 							'is_core' => false,
+							'group' => 'infrastructure',
+							'order' => 1,
 							'status' => 1,
 						]
 					);
 				} else {
 					SystemModule::query()->updateOrCreate(
-						['key' => 'infrastructure'],
+						['key' => 'servers'],
 						[
-							'name' => 'Infrastructure',
+							'name' => 'Servers',
 							'icon' => 'ti ti-server',
-							'description' => 'Infrastructure management (hosting, servers, domains)',
+							'description' => 'Server management module',
 							'is_core' => false,
 							'status' => 1,
 						]
